@@ -43,7 +43,7 @@ impl Parse for SeqMacroInput {
 
 impl Into<proc_macro2::TokenStream> for SeqMacroInput {
     fn into(self) -> proc_macro2::TokenStream {
-        self.expand(self.tt.clone())
+        self.expand()
     }
 }
 
@@ -162,14 +162,14 @@ impl SeqMacroInput {
         (out, mutated)
     }
 
-    fn expand(&self, stream: proc_macro2::TokenStream) -> proc_macro2::TokenStream {
-        let (out, mutated) = self.expand_pass(stream.clone(), Mode::ReplaceSequence);
+    fn expand(self) -> proc_macro2::TokenStream {
+        let (out, mutated) = self.expand_pass(self.tt.clone(), Mode::ReplaceSequence);
         if mutated {
             return out;
         }
 
         self.range()
-            .map(|i| self.expand_pass(stream.clone(), Mode::ReplaceIdent(i)))
+            .map(|i| self.expand_pass(self.tt.clone(), Mode::ReplaceIdent(i)))
             .map(|(ts, _)| ts)
             .collect()
     }
