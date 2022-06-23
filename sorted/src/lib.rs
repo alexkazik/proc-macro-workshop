@@ -63,14 +63,14 @@ impl syn::visit_mut::VisitMut for LexiographicMatching {
                     break;
                 }
 
-                let path = if let Some(path) = get_arm_path(arm.pats.iter().next().unwrap()) {
+                let path = if let Some(path) = get_arm_path(&arm.pat) {
                     path
-                } else if let Some(syn::Pat::Wild(w)) = arm.pats.iter().next() {
+                } else if let syn::Pat::Wild(w) = &arm.pat {
                     wild = Some(w);
                     continue;
                 } else {
                     self.errors.push(syn::Error::new_spanned(
-                        &arm.pats,
+                        &arm.pat,
                         "unsupported by #[sorted]",
                     ));
                     continue;

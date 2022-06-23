@@ -8,8 +8,8 @@ use syn::{parse_macro_input, Result, Token};
 
 #[derive(Debug)]
 struct SeqMacroInput {
-    from: syn::LitInt,
-    to: syn::LitInt,
+    from: u64,
+    to: u64,
     inclusive: bool,
     ident: syn::Ident,
     tt: proc_macro2::TokenStream,
@@ -19,14 +19,14 @@ impl Parse for SeqMacroInput {
     fn parse(input: ParseStream) -> Result<Self> {
         let ident = syn::Ident::parse(input)?;
         let _in = <Token![in]>::parse(input)?;
-        let from = syn::LitInt::parse(input)?;
+        let from = syn::LitInt::parse(input)?.base10_parse()?;
         let inclusive = input.peek(Token![..=]);
         if inclusive {
             <Token![..=]>::parse(input)?;
         } else {
             <Token![..]>::parse(input)?;
         }
-        let to = syn::LitInt::parse(input)?;
+        let to = syn::LitInt::parse(input)?.base10_parse()?;
         let content;
         let _braces = syn::braced!(content in input);
         let tt = proc_macro2::TokenStream::parse(&content)?;
@@ -56,9 +56,9 @@ enum Mode {
 impl SeqMacroInput {
     fn range(&self) -> impl Iterator<Item = u64> {
         if self.inclusive {
-            self.from.value()..(self.to.value() + 1)
+            self.from..(self.to + 1)
         } else {
-            self.from.value()..self.to.value()
+            self.from..self.to
         }
     }
 
