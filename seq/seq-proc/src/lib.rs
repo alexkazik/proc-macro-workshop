@@ -3,7 +3,6 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use proc_macro_hack::proc_macro_hack;
 use syn::parse::{Parse, ParseStream};
 use syn::{parse_macro_input, Result, Token};
 
@@ -90,16 +89,16 @@ impl SeqMacroInput {
                 }
             }
             proc_macro2::TokenTree::Ident(mut ident) => {
-                // search for # followed by self.ident at the end of an identifier
-                // OR # self.ident #
+                // search for ~ followed by self.ident at the end of an identifier
+                // OR ~ self.ident ~
                 let mut peek = rest.clone();
                 match (mode, peek.next(), peek.next()) {
                     (
                         Mode::ReplaceIdent(i),
                         Some(proc_macro2::TokenTree::Punct(ref punct)),
                         Some(proc_macro2::TokenTree::Ident(ref ident2)),
-                    ) if punct.as_char() == '#' && ident2 == &self.ident => {
-                        // have seen ident # N
+                    ) if punct.as_char() == '~' && ident2 == &self.ident => {
+                        // have seen ident ~ N
                         ident = proc_macro2::Ident::new(&format!("{}{}", ident, i), ident.span());
                         *rest = peek.clone();
                         *mutated = true;
@@ -107,7 +106,7 @@ impl SeqMacroInput {
                         // we may need to also consume another #
                         match peek.next() {
                             Some(proc_macro2::TokenTree::Punct(ref punct))
-                                if punct.as_char() == '#' =>
+                                if punct.as_char() == '~' =>
                             {
                                 *rest = peek.clone();
                             }
@@ -181,9 +180,4 @@ pub fn seq(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as SeqMacroInput);
     let output: proc_macro2::TokenStream = input.into();
     output.into()
-}
-
-#[proc_macro_hack]
-pub fn eseq(input: TokenStream) -> TokenStream {
-    seq(input)
 }
