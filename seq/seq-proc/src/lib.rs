@@ -41,9 +41,9 @@ impl Parse for SeqMacroInput {
     }
 }
 
-impl Into<proc_macro2::TokenStream> for SeqMacroInput {
-    fn into(self) -> proc_macro2::TokenStream {
-        self.expand()
+impl From<SeqMacroInput> for proc_macro2::TokenStream {
+    fn from(input: SeqMacroInput) -> Self {
+        input.expand()
     }
 }
 

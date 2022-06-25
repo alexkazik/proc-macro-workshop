@@ -21,7 +21,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let builder_fields = fields.iter().map(|f| {
         let name = &f.ident;
         let ty = &f.ty;
-        if ty_inner_type("Option", ty).is_some() || builder_of(&f).is_some() {
+        if ty_inner_type("Option", ty).is_some() || builder_of(f).is_some() {
             quote! { #name: #ty }
         } else {
             quote! { #name: std::option::Option<#ty> }
@@ -36,7 +36,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
             // if the field is an Option<T>, setting should take just a T,
             // but we then need to store it within a Some.
             (inner_ty, quote! { std::option::Option::Some(#name) })
-        } else if builder_of(&f).is_some() {
+        } else if builder_of(f).is_some() {
             // if the field is a builder, it is a Vec<T>,
             // and the value in the builder is _not_ wrapped in an Option,
             // so we shouldn't wrap the value in Some.
@@ -67,8 +67,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
         //
         // It would not be okay to generate both `env(Vec<String>)` for the field
         // *and* `env(String)` for the builder.
-        match extend_method(&f) {
-            None => set_method.into(),
+        match extend_method(f) {
+            None => set_method,
             Some((true, extend_method)) => extend_method,
             Some((false, extend_method)) => {
                 // safe to generate both!
@@ -76,7 +76,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     #set_method
                     #extend_method
                 };
-                expr.into()
+                expr
             }
         }
     });
