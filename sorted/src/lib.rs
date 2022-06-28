@@ -73,7 +73,7 @@ impl syn::visit_mut::VisitMut for LexiographicMatching {
                         &arm.pat,
                         "unsupported by #[sorted]",
                     ));
-                    continue;
+                    break;
                 };
                 let name = path_as_string(&path);
                 if names.last().map(|last| &name < last).unwrap_or(false) {
@@ -118,6 +118,6 @@ pub fn check(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut lm = LexiographicMatching::default();
     lm.visit_item_fn_mut(&mut f);
     let mut ts = quote! {#f};
-    ts.extend(lm.errors.into_iter().take(1).map(|e| e.to_compile_error()));
+    ts.extend(lm.errors.into_iter().map(|e| e.to_compile_error()));
     ts.into()
 }
